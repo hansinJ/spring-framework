@@ -77,6 +77,9 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	private static final String FILTER_EXPRESSION_ATTRIBUTE = "expression";
 
 
+	/**
+	 * @description component-scan 自定义标签解析
+	 */
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
@@ -85,8 +88,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		String[] basePackages = StringUtils.tokenizeToStringArray(basePackage,
 				ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 
+		// 创建注解扫描器
 		// Actually scan for bean definitions and register them.
 		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
+		// ** 扫描并把扫描的类封装成beanDefinitionHolder对象 **
 		Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
 		registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
 

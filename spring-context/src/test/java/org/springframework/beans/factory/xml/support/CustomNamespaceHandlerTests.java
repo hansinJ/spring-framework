@@ -257,6 +257,7 @@ final class TestNamespaceHandler extends NamespaceHandlerSupport {
 
 	private static class PropertyModifyingBeanDefinitionDecorator implements BeanDefinitionDecorator {
 
+		// 装饰模式，将属性封装成MutablePropertyValue，赋值给BeanDefinitionHolder的BeanDefinition属性
 		@Override
 		public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext parserContext) {
 			Element element = (Element) node;

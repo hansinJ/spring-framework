@@ -122,14 +122,29 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		// 如果beanFacroty不为空，则清除BeanFactory和里面的实例
 		if (hasBeanFactory()) {
 			destroyBeans();
 			closeBeanFactory();
 		}
 		try {
+			// 创建beanFactory实例
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
+
+			// 设置是否可以循环依赖 allowCircularReferences
+			// 是否可以使用相同名称重新注册不同的bean实现
 			customizeBeanFactory(beanFactory);
+
+			// ** 解析xml，并把xml封装成BeanDefinition对象 **
+			/**
+			 *  完成beanDefinition 的注册，
+			 *  注册过程，获取文件路径的io流对象inputstream，再封装成Resource
+			 *  委托jdk中的sax解析对象inputSource来解析
+			 *  解析过程：inputSource将resource解析为document对象，解析分为默认标签解析与自定义标签解析
+			 *  解析成BeanDefinition对象，封装成BeanDefinitionHolder，再对BeanDefinitionHolder进行标签属性及子标签的装饰，最终得到完整的BeanDefinitionHolder.
+			 *  最后将得到的BeanDefinition存入到缓存中（DefaultBeanFactory 的beanDefinitionNames 和 beanDefinitionMap）
+			 */
 			loadBeanDefinitions(beanFactory);
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;

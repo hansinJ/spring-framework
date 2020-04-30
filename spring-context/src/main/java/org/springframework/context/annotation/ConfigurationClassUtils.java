@@ -112,9 +112,11 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		// 判断是否有@Configuration注解
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		// 判断是否有@Component注解，或者类上面没注解(xml配置实例化)方法上面有@Bean注解
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
@@ -122,6 +124,7 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		// 作排序用的order
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
 		Integer order = getOrder(metadata);
 		if (order != null) {

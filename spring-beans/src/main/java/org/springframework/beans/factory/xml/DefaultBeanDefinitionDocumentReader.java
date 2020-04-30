@@ -93,6 +93,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		this.readerContext = readerContext;
+		// ** 把root节点传进去 **
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -146,6 +147,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		preProcessXml(root);
+
+		// ** xml标签具体解析 **
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -166,6 +169,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * @param root the DOM root element of the document
 	 */
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
+		// root表示xml文件的根节点，beans标签
 		if (delegate.isDefaultNamespace(root)) {
 			NodeList nl = root.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {
@@ -173,26 +177,38 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				if (node instanceof Element) {
 					Element ele = (Element) node;
 					if (delegate.isDefaultNamespace(ele)) {
+						// 解析默认标签
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						// 解析自定义标签
 						delegate.parseCustomElement(ele);
 					}
 				}
 			}
 		}
 		else {
+			// ** 解析自定义标签，形如: context:component-scan
+			/**
+			 * 获取标签对应的namespaceHandler,通过namespaceHandler获取对应的handler处理类
+			 * 调用handler.parse(basepackages)
+			 * 递归扫描路径下class文件，通过metadata寻找类的头部有注解includeFilters的则包装成beanDefinition装进容器
+			 * 建立beanName beanDefinition的关系
+			 */
 			delegate.parseCustomElement(root);
 		}
 	}
 
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
+		// 1：import标签解析
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			importBeanDefinitionResource(ele);
 		}
+		// 1：alias标签解析
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
 			processAliasRegistration(ele);
 		}
+		// ** 5：bean标签解析 **
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
@@ -301,12 +317,19 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	/**
 	 * Process the given bean element, parsing the bean definition
 	 * and registering it with the registry.
+	 *
+	 * 解析bean标签
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		// ** 5：解析document，封装成BeanDefinitionHolder **
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
+			// 装饰模式，方法不重要，主要是装饰者设计模式，加上SPI设计思想
+			// 装饰beanDefinitionHolder，得到最终的beanDefinitionHolder
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
+
+				// 完成document到BeanDefinition 的对象转换后，对BeanDefinition对象进行缓存注册,即建立(beanName,beanDefinition)的映射关系
 				// Register the final decorated instance.
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}

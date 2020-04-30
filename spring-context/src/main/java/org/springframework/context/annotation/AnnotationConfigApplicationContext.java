@@ -83,8 +83,12 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * e.g. {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
+		// 组件注册:AnnotationBeanDefinitionReader 完成对注解的支持
+		// ClassPathBeanDefinitionScanner
 		this();
+		// 将启动类封装为BeanDefinition并放入BeanDefinitionRegistry
 		register(annotatedClasses);
+		// 后面的流程和xml解析一样，
 		refresh();
 	}
 
